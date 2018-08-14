@@ -1,0 +1,50 @@
+from keras.datasets import cifar10
+import matplotlib.pyplot as plt
+
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+
+# X_train contains 50000 images with 32*32 pixels and 3 color channels
+X_train.shape
+# It contains 10000 images with 32*32 pixels and 3 color channels
+y_train.shape
+ 
+plt.imshow(X_train[10045])
+
+# Reshape the image
+X_train = X_train.astype('float32')/255.0
+X_test = X_test.astype('float32')/255.0
+X_train.shape
+
+from keras.utils.np_utils import to_categorical
+
+y_train_cat = to_categorical(y_train, 10)
+y_test_cat = to_categorical(y_test, 10)
+y_train_cat.shape
+
+
+import keras.backend as K
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Activation
+
+K.clear_session()
+model = Sequential()
+model.add(Conv2D(32, (3,3), padding='same', activation='relu', input_shape=(32, 32, 3)))
+model.add(Conv2D(32, (3,3), activation='relu'))
+model.add(MaxPool2D(pool_size=(2,2)))
+
+model.add(Conv2D(64, (3,3), padding='same', activation='relu'))
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPool2D(pool_size=(2,2)))
+
+# this converts our 3D feature maps to 1D feature vectors
+model.add(Flatten())
+
+# Addition of the dense layer
+model.add(Dense(512, activation='relu'))
+
+# Addition of the Dense Output layer
+model.add(Dense(10, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.summary()
+
+model.fit(X_train, y_train_cat, batch_size=128, epochs =10, verbose=1, validation_split=0.3)
